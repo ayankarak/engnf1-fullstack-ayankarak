@@ -13,7 +13,8 @@ const validate = (schema, property = "body") => {
             });
         }
 
-        req[property] = result.data;
+        req.validated = req.validated || {};
+        req.validated[property] = result.data;
 
         next();
     };

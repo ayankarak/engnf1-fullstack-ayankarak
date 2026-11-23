@@ -1,6 +1,6 @@
 require("dotenv").config();
 
-const sequelize = require("../src/config/database");
+const sequelize = require("../config/database");
 
 const testDatabaseConnection = async () => {
     try {
