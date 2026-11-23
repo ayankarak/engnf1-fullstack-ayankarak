@@ -1,9 +1,60 @@
 
 const ticketRepository = require("../repositories/ticket.repository");
+const { classifyTicket } = require("../utils/ticket-classifier");
 
 class TicketService {
+    // Create a new ticket with automatic classification
     async createTicket(ticketData) {
-        return await ticketRepository.create(ticketData);
+        const classification = classifyTicket(ticketData);
+
+        return await ticketRepository.create({
+            ...ticketData,
+            ...classification,
+            isHumanOverride: false,
+        });
+    }
+
+    // Import ticket without creating duplicates
+    async importTicket(ticketData) {
+        if (!ticketData.externalId) {
+            const error = new Error("External ID is required for ticket import");
+            error.statusCode = 400;
+            throw error;
+        }
+
+        const classification = classifyTicket(ticketData);
+
+        // Check whether the ticket already exists
+        const existingTicket = await ticketRepository.findByExternalId(
+            ticketData.externalId
+        );
+
+        // If ticket exists, update it instead of creating a duplicate
+        if (existingTicket) {
+            const updateData = {
+                subject: ticketData.subject,
+                body: ticketData.body,
+                autoCategory: classification.autoCategory,
+                priority: classification.priority,
+            };
+
+            // Preserve manually assigned category
+            if (!existingTicket.isHumanOverride) {
+                updateData.category = classification.category;
+            }
+
+            return await ticketRepository.update(
+                existingTicket.id,
+                updateData
+            );
+        }
+
+        // Create a new ticket
+        return await ticketRepository.create({
+            ...ticketData,
+            ...classification,
+            isHumanOverride: false,
+        });
     }
 
     async getTicketById(id) {
@@ -53,6 +104,11 @@ class TicketService {
             throw error;
         }
 
+        // A manually changed category becomes a human override
+        if (updateData.category !== undefined) {
+            updateData.isHumanOverride = true;
+        }
+
         return await ticketRepository.update(id, updateData);
     }
 
@@ -67,7 +123,9 @@ class TicketService {
 
         await ticketRepository.delete(id);
 
-        return { message: "Ticket deleted successfully" };
+        return {
+            message: "Ticket deleted successfully",
+        };
     }
 }
 

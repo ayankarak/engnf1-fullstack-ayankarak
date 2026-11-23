@@ -6,7 +6,7 @@ const authenticate = require("../middlewares/auth.middleware");
 const authorize = require("../middlewares/role.middleware");
 const validate = require("../middlewares/validate.middleware");
 
-const { createTicketSchema, updateTicketSchema, ticketIdSchema, ticketQuerySchema } = require("../validators/ticket.validator");
+const { createTicketSchema, updateTicketSchema, ticketIdSchema, ticketQuerySchema,importTicketSchema, } = require("../validators/ticket.validator");
 
 const router = express.Router();
 
@@ -18,6 +18,9 @@ router.get("/", validate(ticketQuerySchema, "query"), ticketController.getAll );
 
 // POST /api/tickets
 router.post( "/", validate(createTicketSchema), ticketController.create );
+
+// POST /api/tickets/import
+router.post( "/import", validate(importTicketSchema), ticketController.importTicket );
 
 // GET /api/tickets/:id
 router.get("/:id", validate(ticketIdSchema, "params"), ticketController.getById );

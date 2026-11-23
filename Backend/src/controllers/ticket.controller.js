@@ -22,6 +22,25 @@ class TicketController {
         }
     }
 
+    // POST /api/tickets/import
+    async importTicket(req, res, next) {
+        try {
+            const ticket = await ticketService.importTicket(
+                req.validated.body
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: "Ticket imported successfully",
+                data: {
+                    ticket: toTicketDTO(ticket),
+                },
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     // GET /api/tickets
     async getAll(req, res, next) {
         try {

@@ -1,4 +1,3 @@
-
 const { z } = require("zod");
 
 const ticketCategories = [
@@ -76,9 +75,16 @@ const ticketQuerySchema = z.object({
     page: z.coerce.number().int().min(1).default(1),
 });
 
+const importTicketSchema = z.object({
+    externalId: z.string().trim().min(1).max(100),
+    subject: z.string().trim().min(1).max(150),
+    body: z.string().trim().min(1),
+});
+
 module.exports = {
     createTicketSchema,
     updateTicketSchema,
     ticketIdSchema,
     ticketQuerySchema,
+    importTicketSchema,
 };
