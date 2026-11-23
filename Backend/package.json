@@ -1,14 +1,22 @@
+
 {
-  "name": "backend",
+  "name": "triagesync-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "TriageSync Support Ticket Management Backend",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+
+    "db:migrate": "sequelize-cli db:migrate",
+    "db:migrate:undo": "sequelize-cli db:migrate:undo",
+
+    "db:migration:create": "sequelize-cli migration:generate --name",
+    "db:seed": "sequelize-cli db:seed:all"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
