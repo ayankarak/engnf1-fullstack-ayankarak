@@ -1,5 +1,3 @@
-"use strict";
-
 const TRIGGERS = {
     update: "ticket_events_block_update",
     delete: "ticket_events_block_delete",

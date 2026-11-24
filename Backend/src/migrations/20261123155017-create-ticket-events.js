@@ -1,6 +1,3 @@
-
-"use strict";
-
 export default {
     async up(queryInterface, Sequelize) {
         await queryInterface.createTable("ticket_events", {

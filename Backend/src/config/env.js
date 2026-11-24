@@ -5,9 +5,11 @@ dotenv.config();
 
 const envSchema = z.object({
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    PORT: z.coerce.number().int().min(1).max(65535).default(5000),
+    PORT: 
+        z.coerce.number().int().min(1).max(65535).default(5000),
 
-    DB_HOST: z.string().min(1, "is required"),
+    DB_HOST: 
+        z.string().min(1, "is required"),
     DB_PORT: z.coerce.number().int().min(1).max(65535).default(3306),
     DB_USER: z.string().min(1, "is required"),
     DB_PASSWORD: z.string().default(""),

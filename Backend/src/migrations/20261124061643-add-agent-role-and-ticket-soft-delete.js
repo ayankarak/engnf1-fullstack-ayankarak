@@ -1,5 +1,3 @@
-"use strict";
-
 export default {
     async up(queryInterface, Sequelize) {
         // Additive: existing rows keep their current role value.

@@ -1,21 +1,3 @@
-/**
- * Deterministic ticket classifier.
- *
- * Matching rules
- *  - Subject and body are both searched, case-insensitively.
- *  - A keyword only matches as a whole word: "charge" matches "charge" and its simple
- *    inflections (charges, charged, charging) but never "discharge".
- *  - Multi-word keywords ("locked out", "not arrived") match the exact phrase;
- *    whitespace between the words may be any amount of spaces/newlines.
- *
- * Precedence (the first matching rule wins, top to bottom)
- *  - Category: BILLING > LOGIN > DELIVERY > BUG > FEATURE_REQUEST (default).
- *  - Priority: URGENT > HIGH > MEDIUM (default).
- *  e.g. "I'm locked out" is LOGIN + URGENT; "refund for lost package" is BILLING + HIGH.
- *
- * Category and priority are computed independently of each other.
- */
-
 // Simple, explicit inflections only; "ing" forms are listed per keyword so that
 // unrelated words (e.g. "packaging" vs "package") do not match by accident.
 const inflect = (word, extra = []) => {
