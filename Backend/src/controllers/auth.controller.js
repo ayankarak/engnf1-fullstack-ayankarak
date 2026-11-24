@@ -1,13 +1,12 @@
+import authService from "../services/auth.service.js";
+import userDto from "../dto/user.dto.js";
 
-const authService = require("../services/auth.service");
-const { toUserDTO } = require("../dto/user.dto");
+const { toUserDTO } = userDto;
 
 class AuthController {
     async register(req, res, next) {
         try {
-            const user = await authService.register(
-                req.validated.body
-            );
+            const user = await authService.register(req.validated.body);
 
             return res.status(201).json({
                 success: true,
@@ -39,6 +38,17 @@ class AuthController {
             next(error);
         }
     }
+
+    // GET /api/auth/me
+    async me(req, res) {
+        return res.status(200).json({
+            success: true,
+            message: "Current user fetched successfully",
+            data: {
+                user: toUserDTO(req.user),
+            },
+        });
+    }
 }
 
-module.exports = new AuthController();
+export default new AuthController();

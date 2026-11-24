@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import authController from "../controllers/auth.controller.js";
+import authenticate from "../middlewares/auth.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
+import authValidator from "../validators/auth.validator.js";
 
-const authController = require("../controllers/auth.controller");
-const authenticate = require("../middlewares/auth.middleware");
-const validate = require("../middlewares/validate.middleware");
-const { registerSchema, loginSchema } = require("../validators/auth.validator");
+const { registerSchema, loginSchema } = authValidator;
 
 const router = express.Router();
 
@@ -16,4 +17,4 @@ router.post("/login", validate(loginSchema), authController.login);
 // GET /api/auth/me
 router.get("/me", authenticate, authController.me);
 
-module.exports = router;
+export default router;

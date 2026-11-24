@@ -1,4 +1,3 @@
-
 const toTicketEventDTO = (event) => {
     if (!event) return null;
 
@@ -10,11 +9,14 @@ const toTicketEventDTO = (event) => {
         field: data.field,
         oldValue: data.oldValue,
         newValue: data.newValue,
+        // Readable names for assignee changes (null for other fields).
+        oldLabel: data.oldLabel ?? null,
+        newLabel: data.newLabel ?? null,
         actor: data.actor,
         createdAt: data.createdAt,
     };
 };
 
-module.exports = {
+export default {
     toTicketEventDTO,
 };

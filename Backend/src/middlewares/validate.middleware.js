@@ -20,4 +20,4 @@ const validate = (schema, property = "body") => {
     };
 };
 
-module.exports = validate;
+export default validate;

@@ -1,6 +1,9 @@
-const { fn, col } = require("sequelize");
+import sequelizeModule from "sequelize";
+import models from "../models/index.js";
 
-const { Ticket, User } = require("../models");
+const { fn, col } = sequelizeModule;
+
+const { Ticket, User } = models;
 
 const ASSIGNEE_INCLUDE = {
     model: User,
@@ -68,4 +71,4 @@ class TicketRepository {
     }
 }
 
-module.exports = new TicketRepository();
+export default new TicketRepository();

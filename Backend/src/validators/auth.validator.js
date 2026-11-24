@@ -1,6 +1,14 @@
+import { z } from "zod";
 
-const { z } = require("zod");
+const emailField = z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email("Please provide a valid email")
+    .max(254);
 
+// `role` is deliberately absent: Zod strips unknown keys, so a client can never
+// choose its own role through public registration.
 const registerSchema = z.object({
     name: z
         .string()
@@ -8,10 +16,7 @@ const registerSchema = z.object({
         .min(2, "Name must contain at least 2 characters")
         .max(50, "Name cannot exceed 50 characters"),
 
-    email: z
-        .string()
-        .trim()
-        .email("Please provide a valid email"),
+    email: emailField,
 
     password: z
         .string()
@@ -20,17 +25,12 @@ const registerSchema = z.object({
 });
 
 const loginSchema = z.object({
-    email: z
-        .string()
-        .trim()
-        .email("Please provide a valid email"),
+    email: emailField,
 
-    password: z
-        .string()
-        .min(1, "Password is required"),
+    password: z.string().min(1, "Password is required").max(72),
 });
 
-module.exports = {
+export default {
     registerSchema,
     loginSchema,
 };

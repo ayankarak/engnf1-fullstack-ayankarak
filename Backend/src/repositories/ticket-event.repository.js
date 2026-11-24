@@ -1,4 +1,6 @@
-const { TicketEvent } = require("../models");
+import models from "../models/index.js";
+
+const { TicketEvent } = models;
 
 // Append-only repository: there is intentionally no update or delete method.
 class TicketEventRepository {
@@ -22,4 +24,4 @@ class TicketEventRepository {
     }
 }
 
-module.exports = new TicketEventRepository();
+export default new TicketEventRepository();

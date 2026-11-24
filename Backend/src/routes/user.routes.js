@@ -1,17 +1,18 @@
-const express = require("express");
+import express from "express";
+import userController from "../controllers/user.controller.js";
+import authenticate from "../middlewares/auth.middleware.js";
+import authorize from "../middlewares/role.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
+import constants from "../utils/constants.js";
+import userValidator from "../validators/user.validator.js";
 
-const userController = require("../controllers/user.controller");
-
-const authenticate = require("../middlewares/auth.middleware");
-const authorize = require("../middlewares/role.middleware");
-const validate = require("../middlewares/validate.middleware");
-const { ROLES } = require("../utils/constants");
+const { ROLES } = constants;
 
 const {
     userIdSchema,
     updateUserRoleSchema,
     userListQuerySchema,
-} = require("../validators/user.validator");
+} = userValidator;
 
 const router = express.Router();
 
@@ -37,4 +38,4 @@ router.patch(
     userController.updateRole
 );
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const userRepository = require("../repositories/user.repository");
-const ApiError = require("../utils/ApiError");
+import userRepository from "../repositories/user.repository.js";
+import ApiError from "../utils/ApiError.js";
 
 class UserService {
     async listAssignable() {
@@ -37,4 +37,4 @@ class UserService {
     }
 }
 
-module.exports = new UserService();
+export default new UserService();

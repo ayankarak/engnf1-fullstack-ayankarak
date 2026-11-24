@@ -1,5 +1,13 @@
+import sequelizeModule from "sequelize";
+import constants from "../utils/constants.js";
 
-const { DataTypes } = require("sequelize");
+const { DataTypes } = sequelizeModule;
+
+const {
+    TICKET_CATEGORIES,
+    TICKET_PRIORITIES,
+    TICKET_STATUSES,
+} = constants;
 
 const defineTicket = (sequelize) => {
     const Ticket = sequelize.define(
@@ -23,7 +31,7 @@ const defineTicket = (sequelize) => {
                 allowNull: false,
                 validate: {
                     notEmpty: true,
-                    len: [3, 150],
+                    len: [1, 150],
                 },
             },
 
@@ -33,25 +41,13 @@ const defineTicket = (sequelize) => {
             },
 
             autoCategory: {
-                type: DataTypes.ENUM(
-                    "BILLING",
-                    "BUG",
-                    "FEATURE_REQUEST",
-                    "LOGIN",
-                    "DELIVERY"
-                ),
+                type: DataTypes.ENUM(...TICKET_CATEGORIES),
                 allowNull: false,
                 field: "auto_category",
             },
 
             category: {
-                type: DataTypes.ENUM(
-                    "BILLING",
-                    "BUG",
-                    "FEATURE_REQUEST",
-                    "LOGIN",
-                    "DELIVERY"
-                ),
+                type: DataTypes.ENUM(...TICKET_CATEGORIES),
                 allowNull: false,
             },
 
@@ -63,23 +59,13 @@ const defineTicket = (sequelize) => {
             },
 
             priority: {
-                type: DataTypes.ENUM(
-                    "LOW",
-                    "MEDIUM",
-                    "HIGH",
-                    "URGENT"
-                ),
+                type: DataTypes.ENUM(...TICKET_PRIORITIES),
                 allowNull: false,
                 defaultValue: "MEDIUM",
             },
 
             status: {
-                type: DataTypes.ENUM(
-                    "OPEN",
-                    "IN_PROGRESS",
-                    "RESOLVED",
-                    "CLOSED"
-                ),
+                type: DataTypes.ENUM(...TICKET_STATUSES),
                 allowNull: false,
                 defaultValue: "OPEN",
             },
@@ -100,10 +86,12 @@ const defineTicket = (sequelize) => {
         {
             tableName: "tickets",
             timestamps: true,
+            // Soft delete keeps the audit history (ticket_events) intact.
+            paranoid: true,
         }
     );
 
     return Ticket;
 };
 
-module.exports = defineTicket;
+export default defineTicket;

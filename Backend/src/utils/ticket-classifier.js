@@ -1,80 +1,93 @@
+/**
+ * Deterministic ticket classifier.
+ *
+ * Matching rules
+ *  - Subject and body are both searched, case-insensitively.
+ *  - A keyword only matches as a whole word: "charge" matches "charge" and its simple
+ *    inflections (charges, charged, charging) but never "discharge".
+ *  - Multi-word keywords ("locked out", "not arrived") match the exact phrase;
+ *    whitespace between the words may be any amount of spaces/newlines.
+ *
+ * Precedence (the first matching rule wins, top to bottom)
+ *  - Category: BILLING > LOGIN > DELIVERY > BUG > FEATURE_REQUEST (default).
+ *  - Priority: URGENT > HIGH > MEDIUM (default).
+ *  e.g. "I'm locked out" is LOGIN + URGENT; "refund for lost package" is BILLING + HIGH.
+ *
+ * Category and priority are computed independently of each other.
+ */
+
+// Simple, explicit inflections only; "ing" forms are listed per keyword so that
+// unrelated words (e.g. "packaging" vs "package") do not match by accident.
+const inflect = (word, extra = []) => {
+    const forms = new Set([word, `${word}s`, `${word}es`, `${word}ed`, ...extra]);
+
+    if (word.endsWith("e")) forms.add(`${word}d`);
+    if (word.endsWith("y")) forms.add(`${word.slice(0, -1)}ies`);
+
+    return [...forms];
+};
+
+const kw = (phrase, extraForms = []) => {
+    const isSingleWord = /^[a-z]{4,}$/.test(phrase);
+    const forms = isSingleWord ? inflect(phrase, extraForms) : [phrase];
+
+    const source = forms
+        .map((form) =>
+            form
+                .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+                .replace(/\s+/g, "\\s+")
+        )
+        .join("|");
+
+    // Letters/digits on either side mean "part of a longer word", so no match.
+    return new RegExp(`(?<![a-z0-9])(?:${source})(?![a-z0-9])`);
+};
 
 const CATEGORY_RULES = [
     {
         category: "BILLING",
-        keywords: ["refund", "invoice", "charge", "payment"],
+        matchers: [kw("refund", ["refunding"]), kw("invoice", ["invoicing"]), kw("charge", ["charging"]), kw("payment")],
     },
     {
         category: "LOGIN",
-        keywords: ["password", "2fa", "login", "locked out"],
+        matchers: [kw("password"), kw("2fa"), kw("login"), kw("locked out")],
     },
     {
         category: "DELIVERY",
-        keywords: ["package", "shipping", "tracking", "delivery"],
+        matchers: [kw("package"), kw("shipping"), kw("tracking"), kw("delivery")],
     },
     {
         category: "BUG",
-        keywords: ["crash", "error", "500", "exception"],
+        matchers: [kw("crash", ["crashing"]), kw("error"), kw("500"), kw("exception")],
     },
 ];
 
 const PRIORITY_RULES = [
     {
         priority: "URGENT",
-        keywords: ["urgent", "production down", "locked out"],
+        matchers: [kw("urgent"), kw("production down"), kw("locked out")],
     },
     {
         priority: "HIGH",
-        keywords: ["error", "refund", "not arrived"],
+        matchers: [kw("error"), kw("refund", ["refunding"]), kw("not arrived")],
     },
 ];
 
-const containsKeyword = (text, keyword) => {
-    const escapedKeyword = keyword.replace(
-        /[.*+?^${}()|[\]\\]/g,
-        "\\$&"
-    );
-
-    const pattern = escapedKeyword.replace(/\s+/g, "\\s+");
-
-    const regex = new RegExp(`\\b${pattern}\\b`, "i");
-
-    return regex.test(text);
-};
-
-const classifyCategory = (text) => {
-    for (const rule of CATEGORY_RULES) {
-        const matched = rule.keywords.some((keyword) =>
-            containsKeyword(text, keyword)
-        );
-
-        if (matched) {
-            return rule.category;
+const firstMatch = (rules, key, text, fallback) => {
+    for (const rule of rules) {
+        if (rule.matchers.some((matcher) => matcher.test(text))) {
+            return rule[key];
         }
     }
 
-    return "FEATURE_REQUEST";
-};
-
-const classifyPriority = (text) => {
-    for (const rule of PRIORITY_RULES) {
-        const matched = rule.keywords.some((keyword) =>
-            containsKeyword(text, keyword)
-        );
-
-        if (matched) {
-            return rule.priority;
-        }
-    }
-
-    return "MEDIUM";
+    return fallback;
 };
 
 const classifyTicket = ({ subject = "", body = "" } = {}) => {
-    const text = `${subject} ${body}`.trim().toLowerCase();
+    const text = `${subject}\n${body}`.normalize("NFKC").toLowerCase();
 
-    const category = classifyCategory(text);
-    const priority = classifyPriority(text);
+    const category = firstMatch(CATEGORY_RULES, "category", text, "FEATURE_REQUEST");
+    const priority = firstMatch(PRIORITY_RULES, "priority", text, "MEDIUM");
 
     return {
         autoCategory: category,
@@ -83,6 +96,4 @@ const classifyTicket = ({ subject = "", body = "" } = {}) => {
     };
 };
 
-module.exports = {
-    classifyTicket,
-};
+export default { classifyTicket };

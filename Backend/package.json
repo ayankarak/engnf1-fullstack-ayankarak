@@ -2,10 +2,12 @@
   "name": "triagesync-backend",
   "version": "1.0.0",
   "description": "TriageSync Support Ticket Management Backend",
+  "type": "module",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "test": "node --test tests/unit/*.test.js",
     "db:migrate": "sequelize-cli db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo",
     "db:migration:create": "sequelize-cli migration:generate --name",

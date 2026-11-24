@@ -1,6 +1,7 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+import sequelize from "../config/database.js";
 
-const sequelize = require("../config/database");
+dotenv.config();
 
 const testDatabaseConnection = async () => {
     try {

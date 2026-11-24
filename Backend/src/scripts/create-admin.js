@@ -1,10 +1,13 @@
-require("dotenv").config();
+import dotenv from "dotenv";
+import bcrypt from "bcrypt";
+import sequelize from "../config/database.js";
+import models from "../models/index.js";
+import constants from "../utils/constants.js";
 
-const bcrypt = require("bcrypt");
+dotenv.config();
 
-const sequelize = require("../config/database");
-const { User } = require("../models");
-const { ROLES } = require("../utils/constants");
+const { User } = models;
+const { ROLES } = constants;
 
 // Creates the initial ADMIN account from ADMIN_NAME / ADMIN_EMAIL / ADMIN_PASSWORD in .env.
 // Run it once after the migrations: npm run db:create-admin

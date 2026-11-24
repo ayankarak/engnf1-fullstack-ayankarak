@@ -1,11 +1,12 @@
-const express = require("express");
+import express from "express";
+import ticketController from "../controllers/ticket.controller.js";
+import authenticate from "../middlewares/auth.middleware.js";
+import authorize from "../middlewares/role.middleware.js";
+import validate from "../middlewares/validate.middleware.js";
+import constants from "../utils/constants.js";
+import ticketValidator from "../validators/ticket.validator.js";
 
-const ticketController = require("../controllers/ticket.controller");
-
-const authenticate = require("../middlewares/auth.middleware");
-const authorize = require("../middlewares/role.middleware");
-const validate = require("../middlewares/validate.middleware");
-const { ROLES } = require("../utils/constants");
+const { ROLES } = constants;
 
 const {
     createTicketSchema,
@@ -13,7 +14,7 @@ const {
     ticketIdSchema,
     ticketQuerySchema,
     importTicketSchema,
-} = require("../validators/ticket.validator");
+} = ticketValidator;
 
 const router = express.Router();
 
@@ -58,4 +59,4 @@ router.delete(
     ticketController.delete
 );
 
-module.exports = router;
+export default router;

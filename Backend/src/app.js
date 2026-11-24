@@ -1,25 +1,22 @@
-
-require("dotenv").config();
-
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-
-const authRoutes = require("./routes/auth.routes");
-const ticketRoutes = require("./routes/ticket.routes");
-
-const errorHandler = require("./middlewares/error.middleware");
+import express from "express";
+import helmet from "helmet";
+import cors from "cors";
+import env from "./config/env.js";
+import authRoutes from "./routes/auth.routes.js";
+import ticketRoutes from "./routes/ticket.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import errorHandler from "./middlewares/error.middleware.js";
 
 const app = express();
 
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
-app.use(cors());
+// CORS: only the configured browser origins (CORS_ORIGIN)
+app.use(cors({ origin: env.corsOrigins }));
 
 // Parse incoming JSON requests
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "1mb" }));
 
 // Parse URL-encoded requests
 app.use(express.urlencoded({ extended: true }));
@@ -36,6 +33,7 @@ app.get("/", (req, res) => {
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
+app.use("/api/users", userRoutes);
 
 // Handle undefined routes
 app.use((req, res) => {
@@ -48,4 +46,4 @@ app.use((req, res) => {
 // Global error handler (must be last)
 app.use(errorHandler);
 
-module.exports = app;
+export default app;

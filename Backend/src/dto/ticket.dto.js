@@ -1,12 +1,16 @@
-const { toUserDTO } = require("./user.dto");
-const { toTicketEventDTO } = require("./ticket-event.dto");
+import userDto from "./user.dto.js";
+import ticketEventDto from "./ticket-event.dto.js";
 
-const toTicketDTO = (ticket) => {
+const { toUserDTO } = userDto;
+const { toTicketEventDTO } = ticketEventDto;
+
+// `events` is only included for detail responses (pass the loaded events as 2nd arg).
+const toTicketDTO = (ticket, events) => {
     if (!ticket) return null;
 
     const data = ticket.toJSON ? ticket.toJSON() : ticket;
 
-    return {
+    const dto = {
         id: data.id,
         externalId: data.externalId,
         subject: data.subject,
@@ -21,16 +25,16 @@ const toTicketDTO = (ticket) => {
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
 
-        assignee: data.assignee
-            ? toUserDTO(data.assignee)
-            : null,
-
-        events: Array.isArray(data.events)
-            ? data.events.map(toTicketEventDTO)
-            : [],
+        assignee: data.assignee ? toUserDTO(data.assignee) : null,
     };
+
+    if (Array.isArray(events)) {
+        dto.events = events.map(toTicketEventDTO);
+    }
+
+    return dto;
 };
 
-module.exports = {
+export default {
     toTicketDTO,
 };

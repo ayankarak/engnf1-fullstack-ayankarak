@@ -1,9 +1,7 @@
-
-const sequelize = require("../config/database");
-
-const defineUser = require("./user.model");
-const defineTicket = require("./ticket.model");
-const defineTicketEvent = require("./ticket-event.model");
+import sequelize from "../config/database.js";
+import defineUser from "./user.model.js";
+import defineTicket from "./ticket.model.js";
+import defineTicketEvent from "./ticket-event.model.js";
 
 // Initialize models
 const User = defineUser(sequelize);
@@ -32,7 +30,7 @@ TicketEvent.belongsTo(Ticket, {
     as: "ticket",
 });
 
-module.exports = {
+export default {
     sequelize,
     User,
     Ticket,

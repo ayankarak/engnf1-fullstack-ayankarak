@@ -1,19 +1,24 @@
-const crypto = require("crypto");
+import crypto from "crypto";
+import sequelizeModule from "sequelize";
+import models from "../models/index.js";
+import ticketRepository from "../repositories/ticket.repository.js";
+import ticketEventRepository from "../repositories/ticket-event.repository.js";
+import userRepository from "../repositories/user.repository.js";
+import ApiError from "../utils/ApiError.js";
+import ticketClassifier from "../utils/ticket-classifier.js";
+import escapeLikeUtils from "../utils/escape-like.js";
+import constants from "../utils/constants.js";
 
-const { Op } = require("sequelize");
+const { Op } = sequelizeModule;
 
-const { sequelize, User } = require("../models");
-const ticketRepository = require("../repositories/ticket.repository");
-const ticketEventRepository = require("../repositories/ticket-event.repository");
-const userRepository = require("../repositories/user.repository");
-const ApiError = require("../utils/ApiError");
-const { classifyTicket } = require("../utils/ticket-classifier");
-const { escapeLike } = require("../utils/escape-like");
+const { sequelize, User } = models;
+const { classifyTicket } = ticketClassifier;
+const { escapeLike } = escapeLikeUtils;
 const {
     ROLES,
     AUDITED_FIELDS,
     SYSTEM_IMPORT_ACTOR,
-} = require("../utils/constants");
+} = constants;
 
 const isUniqueConstraintError = (error) => error?.name === "SequelizeUniqueConstraintError";
 
@@ -309,4 +314,4 @@ class TicketService {
     }
 }
 
-module.exports = new TicketService();
+export default new TicketService();

@@ -1,5 +1,10 @@
+import sequelizeModule from "sequelize";
+import ApiError from "../utils/ApiError.js";
+import constants from "../utils/constants.js";
 
-const { DataTypes } = require("sequelize");
+const { DataTypes } = sequelizeModule;
+
+const { AUDITED_FIELDS } = constants;
 
 const defineTicketEvent = (sequelize) => {
     const TicketEvent = sequelize.define(
@@ -18,12 +23,7 @@ const defineTicketEvent = (sequelize) => {
             },
 
             field: {
-                type: DataTypes.ENUM(
-                    "category",
-                    "priority",
-                    "status",
-                    "assigneeId"
-                ),
+                type: DataTypes.ENUM(...AUDITED_FIELDS),
                 allowNull: false,
             },
 
@@ -48,24 +48,22 @@ const defineTicketEvent = (sequelize) => {
             tableName: "ticket_events",
             timestamps: true,
             updatedAt: false,
-            hooks: {
-                beforeUpdate() {
-                    throw new Error("Ticket audit events are immutable");
-                },
-                beforeDestroy() {
-                    throw new Error("Ticket audit events are immutable");
-                },
-                beforeBulkUpdate() {
-                    throw new Error("Ticket audit events are immutable");
-                },
-                beforeBulkDestroy() {
-                    throw new Error("Ticket audit events are immutable");
-                },
-            },
         }
     );
+
+    // Audit events are append-only. This is the application-level guard; the database
+    // also enforces it with triggers (see the audit-immutability migration).
+    const rejectMutation = () => {
+        throw new ApiError(405, "Audit events are immutable and cannot be modified or deleted");
+    };
+
+    TicketEvent.addHook("beforeUpdate", rejectMutation);
+    TicketEvent.addHook("beforeDestroy", rejectMutation);
+    TicketEvent.addHook("beforeBulkUpdate", rejectMutation);
+    TicketEvent.addHook("beforeBulkDestroy", rejectMutation);
+    TicketEvent.addHook("beforeUpsert", rejectMutation);
 
     return TicketEvent;
 };
 
-module.exports = defineTicketEvent;
+export default defineTicketEvent;

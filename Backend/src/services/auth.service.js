@@ -1,8 +1,9 @@
-const bcrypt = require("bcrypt");
+import bcrypt from "bcrypt";
+import userRepository from "../repositories/user.repository.js";
+import ApiError from "../utils/ApiError.js";
+import jwt from "../utils/jwt.js";
 
-const userRepository = require("../repositories/user.repository");
-const ApiError = require("../utils/ApiError");
-const { signToken } = require("../utils/jwt");
+const { signToken } = jwt;
 
 const BCRYPT_ROUNDS = 12;
 
@@ -48,4 +49,4 @@ class AuthService {
     }
 }
 
-module.exports = new AuthService();
+export default new AuthService();

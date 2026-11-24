@@ -1,10 +1,6 @@
-
-require("dotenv").config();
-
-const app = require("./app");
-const sequelize = require("./config/database");
-
-const PORT = process.env.PORT || 5000;
+import env from "./config/env.js";
+import app from "./app.js";
+import sequelize from "./config/database.js";
 
 const startServer = async () => {
     try {
@@ -14,10 +10,22 @@ const startServer = async () => {
         console.log("MySQL database connected successfully.");
 
         // Start Express server
-        app.listen(PORT, () => {
-            console.log(`TriageSync API running on port ${PORT}`);
-            console.log(`URL: http://localhost:${PORT}`);
+        const server = app.listen(env.PORT, () => {
+            console.log(`TriageSync API running on port ${env.PORT}`);
+            console.log(`URL: http://localhost:${env.PORT}`);
         });
+
+        const shutdown = (signal) => {
+            console.log(`${signal} received, shutting down...`);
+
+            server.close(async () => {
+                await sequelize.close();
+                process.exit(0);
+            });
+        };
+
+        process.on("SIGTERM", () => shutdown("SIGTERM"));
+        process.on("SIGINT", () => shutdown("SIGINT"));
     } catch (error) {
         console.error("Unable to start server:", error.message);
         process.exit(1);

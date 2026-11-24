@@ -1,33 +1,47 @@
+import userRepository from "../repositories/user.repository.js";
+import ApiError from "../utils/ApiError.js";
+import jwt from "../utils/jwt.js";
 
-const jwt = require("jsonwebtoken");
+const { verifyToken } = jwt;
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                success: false,
-                message: "Authentication token is required",
-            });
+            throw new ApiError(401, "Authentication token is required");
         }
 
-        const token = authHeader.split(" ")[1];
+        const token = authHeader.slice("Bearer ".length).trim();
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        let decoded;
+        try {
+            decoded = verifyToken(token);
+        } catch (error) {
+            throw new ApiError(
+                401,
+                error.name === "TokenExpiredError" ? "Token has expired" : "Invalid token"
+            );
+        }
+
+        // Load the user so the role is always current and deleted users are rejected.
+        const user = await userRepository.findById(decoded.id);
+
+        if (!user) {
+            throw new ApiError(401, "User no longer exists");
+        }
 
         req.user = {
-            id: decoded.id,
-            role: decoded.role,
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
         };
 
         next();
     } catch (error) {
-        return res.status(401).json({
-            success: false,
-            message: "Invalid or expired token",
-        });
+        next(error);
     }
 };
 
-module.exports = authenticate;
+export default authenticate;

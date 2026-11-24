@@ -1,7 +1,11 @@
-const { Op } = require("sequelize");
+import sequelizeModule from "sequelize";
+import models from "../models/index.js";
+import constants from "../utils/constants.js";
 
-const { User } = require("../models");
-const { ROLES } = require("../utils/constants");
+const { Op } = sequelizeModule;
+
+const { User } = models;
+const { ROLES } = constants;
 
 class UserRepository {
     async create(userData) {
@@ -53,4 +57,4 @@ class UserRepository {
     }
 }
 
-module.exports = new UserRepository();
+export default new UserRepository();

@@ -5,7 +5,7 @@ const TRIGGERS = {
     delete: "ticket_events_block_delete",
 };
 
-module.exports = {
+export default {
     async up(queryInterface) {
         await queryInterface.addIndex("tickets", ["createdAt"], {
             name: "tickets_created_at",

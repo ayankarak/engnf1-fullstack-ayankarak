@@ -1,9 +1,9 @@
-
 const toUserDTO = (user) => {
     if (!user) return null;
 
     const data = user.toJSON ? user.toJSON() : user;
 
+    // Explicit allow-list: passwordHash can never leak through here.
     return {
         id: data.id,
         name: data.name,
@@ -14,6 +14,6 @@ const toUserDTO = (user) => {
     };
 };
 
-module.exports = {
+export default {
     toUserDTO,
 };

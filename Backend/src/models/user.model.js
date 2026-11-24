@@ -1,5 +1,9 @@
+import sequelizeModule from "sequelize";
+import constants from "../utils/constants.js";
 
-const { DataTypes } = require("sequelize");
+const { DataTypes } = sequelizeModule;
+
+const { ROLE_VALUES } = constants;
 
 const defineUser = (sequelize) => {
     const User = sequelize.define(
@@ -43,7 +47,7 @@ const defineUser = (sequelize) => {
             },
 
             role: {
-                type: DataTypes.ENUM("USER", "ADMIN"),
+                type: DataTypes.ENUM(...ROLE_VALUES),
                 allowNull: false,
                 defaultValue: "USER",
             },
@@ -57,4 +61,4 @@ const defineUser = (sequelize) => {
     return User;
 };
 
-module.exports = defineUser;
+export default defineUser;
