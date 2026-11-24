@@ -1,46 +1,70 @@
-const { Ticket, User, TicketEvent } = require("../models");
+const { fn, col } = require("sequelize");
 
-const ticketIncludes = [
-    { model: User, as: "assignee", attributes: ["id", "name", "email"] },
-    { model: TicketEvent, as: "events" },
-];
+const { Ticket, User } = require("../models");
+
+const ASSIGNEE_INCLUDE = {
+    model: User,
+    as: "assignee",
+    attributes: ["id", "name", "email"],
+};
+
+// Row lock only makes sense inside a transaction.
+const lockOption = (options) =>
+    options.lock && options.transaction ? { lock: options.transaction.LOCK.UPDATE } : {};
 
 class TicketRepository {
     async create(ticketData, options = {}) {
-        return Ticket.create(ticketData, options);
+        return await Ticket.create(ticketData, { transaction: options.transaction });
     }
 
     async findById(id, options = {}) {
-        return Ticket.findByPk(id, {
-            ...options,
-            include: ticketIncludes,
+        return await Ticket.findByPk(id, {
+            include: options.lock ? [] : [ASSIGNEE_INCLUDE],
+            transaction: options.transaction,
+            ...lockOption(options),
         });
     }
 
     async findByExternalId(externalId, options = {}) {
-        return Ticket.findOne({ where: { externalId }, ...options });
+        return await Ticket.findOne({
+            where: { externalId },
+            paranoid: options.paranoid !== false,
+            transaction: options.transaction,
+            ...lockOption(options),
+        });
     }
 
-    async findAll(options = {}) {
-        const { where = {}, limit = 10, offset = 0 } = options;
-        return Ticket.findAndCountAll({
+    async findAll({ where = {}, limit = 10, offset = 0, order } = {}) {
+        return await Ticket.findAndCountAll({
             where,
+            include: [ASSIGNEE_INCLUDE],
             limit,
             offset,
-            order: [["createdAt", "DESC"]],
+            order: order || [["createdAt", "DESC"], ["id", "DESC"]],
             distinct: true,
         });
     }
 
-    async update(id, updateData, options = {}) {
-        const ticket = await Ticket.findByPk(id, options);
-        if (!ticket) return null;
-        await ticket.update(updateData, options);
-        return this.findById(id, options);
+    async save(ticket, changes, options = {}) {
+        return await ticket.update(changes, { transaction: options.transaction });
     }
 
-    async delete(id, options = {}) {
-        return Ticket.destroy({ where: { id }, ...options });
+    async softDelete(ticket) {
+        return await ticket.destroy();
+    }
+
+    async countByStatus() {
+        const rows = await Ticket.findAll({
+            attributes: ["status", [fn("COUNT", col("id")), "count"]],
+            group: ["status"],
+            raw: true,
+        });
+
+        return Object.fromEntries(rows.map((row) => [row.status, Number(row.count)]));
+    }
+
+    async countByPriority(priority) {
+        return await Ticket.count({ where: { priority } });
     }
 }
 

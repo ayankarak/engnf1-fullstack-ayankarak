@@ -1,18 +1,23 @@
 const { TicketEvent } = require("../models");
 
+// Append-only repository: there is intentionally no update or delete method.
 class TicketEventRepository {
-    async create(eventData, options = {}) {
-        return TicketEvent.create(eventData, options);
-    }
+    async createMany(events, options = {}) {
+        if (events.length === 0) return [];
 
-    async findById(id) {
-        return TicketEvent.findByPk(id);
+        return await TicketEvent.bulkCreate(events, {
+            transaction: options.transaction,
+        });
     }
 
     async findByTicketId(ticketId) {
-        return TicketEvent.findAll({
+        return await TicketEvent.findAll({
             where: { ticketId },
-            order: [["createdAt", "DESC"]],
+            // Chronological; id breaks ties between events written in the same second.
+            order: [
+                ["createdAt", "ASC"],
+                ["id", "ASC"],
+            ],
         });
     }
 }

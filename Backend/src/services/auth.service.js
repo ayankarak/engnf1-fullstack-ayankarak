@@ -1,66 +1,49 @@
-
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 const userRepository = require("../repositories/user.repository");
+const ApiError = require("../utils/ApiError");
+const { signToken } = require("../utils/jwt");
+
+const BCRYPT_ROUNDS = 12;
+
+// Compared against when the email is unknown, so that response time does not reveal
+// whether an account exists.
+const DUMMY_HASH = "$2b$12$2770Lf4w65X5swzsguiHEuzDjWP0hNT9dMfWTG.K..Mr5/Yk6GkOe";
 
 class AuthService {
     async register(userData) {
-        const existingUser = await userRepository.findByEmail(
-            userData.email
-        );
+        const existingUser = await userRepository.findByEmail(userData.email);
 
         if (existingUser) {
-            const error = new Error("Email already registered");
-            error.statusCode = 409;
-            throw error;
+            throw new ApiError(409, "Email already registered");
         }
 
-        const passwordHash = await bcrypt.hash(userData.password, 12);
+        const passwordHash = await bcrypt.hash(userData.password, BCRYPT_ROUNDS);
 
-        const user = await userRepository.create({
+        // Public registration always creates a USER; ADMIN accounts come from the
+        // create-admin script and roles are changed by an admin afterwards.
+        return await userRepository.create({
             name: userData.name,
             email: userData.email,
             passwordHash,
         });
-
-        return user;
     }
 
     async login(email, password) {
         const user = await userRepository.findByEmail(email);
 
-        if (!user) {
-            const error = new Error("Invalid email or password");
-            error.statusCode = 401;
-            throw error;
-        }
-
         const isPasswordValid = await bcrypt.compare(
             password,
-            user.passwordHash
+            user ? user.passwordHash : DUMMY_HASH
         );
 
-        if (!isPasswordValid) {
-            const error = new Error("Invalid email or password");
-            error.statusCode = 401;
-            throw error;
+        if (!user || !isPasswordValid) {
+            throw new ApiError(401, "Invalid email or password");
         }
-
-        const token = jwt.sign(
-            {
-                id: user.id,
-                role: user.role,
-            },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: process.env.JWT_EXPIRES_IN || "24h",
-            }
-        );
 
         return {
             user,
-            token,
+            token: signToken(user),
         };
     }
 }
