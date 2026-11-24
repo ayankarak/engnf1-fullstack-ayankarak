@@ -48,6 +48,20 @@ const defineTicketEvent = (sequelize) => {
             tableName: "ticket_events",
             timestamps: true,
             updatedAt: false,
+            hooks: {
+                beforeUpdate() {
+                    throw new Error("Ticket audit events are immutable");
+                },
+                beforeDestroy() {
+                    throw new Error("Ticket audit events are immutable");
+                },
+                beforeBulkUpdate() {
+                    throw new Error("Ticket audit events are immutable");
+                },
+                beforeBulkDestroy() {
+                    throw new Error("Ticket audit events are immutable");
+                },
+            },
         }
     );
 

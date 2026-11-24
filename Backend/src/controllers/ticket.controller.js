@@ -92,7 +92,8 @@ class TicketController {
 
             const ticket = await ticketService.updateTicket(
                 id,
-                req.validated.body
+                req.validated.body,
+                req.user.id
             );
 
             return res.status(200).json({

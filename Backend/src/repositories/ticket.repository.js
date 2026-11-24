@@ -1,37 +1,29 @@
-
 const { Ticket, User, TicketEvent } = require("../models");
 
+const ticketIncludes = [
+    { model: User, as: "assignee", attributes: ["id", "name", "email"] },
+    { model: TicketEvent, as: "events" },
+];
+
 class TicketRepository {
-    async create(ticketData) {
-        return await Ticket.create(ticketData);
+    async create(ticketData, options = {}) {
+        return Ticket.create(ticketData, options);
     }
 
-    async findById(id) {
-        return await Ticket.findByPk(id, {
-            include: [
-                {
-                    model: User,
-                    as: "assignee",
-                    attributes: ["id", "name", "email"],
-                },
-                {
-                    model: TicketEvent,
-                    as: "events",
-                },
-            ],
+    async findById(id, options = {}) {
+        return Ticket.findByPk(id, {
+            ...options,
+            include: ticketIncludes,
         });
     }
 
-    async findByExternalId(externalId) {
-        return await Ticket.findOne({
-            where: { externalId },
-        });
+    async findByExternalId(externalId, options = {}) {
+        return Ticket.findOne({ where: { externalId }, ...options });
     }
 
     async findAll(options = {}) {
         const { where = {}, limit = 10, offset = 0 } = options;
-
-        return await Ticket.findAndCountAll({
+        return Ticket.findAndCountAll({
             where,
             limit,
             offset,
@@ -40,20 +32,15 @@ class TicketRepository {
         });
     }
 
-    async update(id, updateData) {
-        const [updatedRows] = await Ticket.update(updateData, {
-            where: { id },
-        });
-
-        if (updatedRows === 0) return null;
-
-        return await Ticket.findByPk(id);
+    async update(id, updateData, options = {}) {
+        const ticket = await Ticket.findByPk(id, options);
+        if (!ticket) return null;
+        await ticket.update(updateData, options);
+        return this.findById(id, options);
     }
 
-    async delete(id) {
-        return await Ticket.destroy({
-            where: { id },
-        });
+    async delete(id, options = {}) {
+        return Ticket.destroy({ where: { id }, ...options });
     }
 }
 

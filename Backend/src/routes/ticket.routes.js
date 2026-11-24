@@ -20,7 +20,7 @@ router.get("/", validate(ticketQuerySchema, "query"), ticketController.getAll );
 router.post( "/", validate(createTicketSchema), ticketController.create );
 
 // POST /api/tickets/import
-router.post( "/import", validate(importTicketSchema), ticketController.importTicket );
+router.post( "/import", authorize("ADMIN"), validate(importTicketSchema), ticketController.importTicket );
 
 // GET /api/tickets/:id
 router.get("/:id", validate(ticketIdSchema, "params"), ticketController.getById );

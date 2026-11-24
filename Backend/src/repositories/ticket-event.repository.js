@@ -1,25 +1,18 @@
-
 const { TicketEvent } = require("../models");
 
 class TicketEventRepository {
-    async create(eventData) {
-        return await TicketEvent.create(eventData);
+    async create(eventData, options = {}) {
+        return TicketEvent.create(eventData, options);
     }
 
     async findById(id) {
-        return await TicketEvent.findByPk(id);
+        return TicketEvent.findByPk(id);
     }
 
     async findByTicketId(ticketId) {
-        return await TicketEvent.findAll({
+        return TicketEvent.findAll({
             where: { ticketId },
             order: [["createdAt", "DESC"]],
-        });
-    }
-
-    async deleteByTicketId(ticketId) {
-        return await TicketEvent.destroy({
-            where: { ticketId },
         });
     }
 }

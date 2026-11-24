@@ -23,7 +23,7 @@ const ticketStatuses = [
 ];
 
 const createTicketSchema = z.object({
-    externalId: z.string().trim().max(100).optional(),
+    externalId: z.string().trim().min(1).max(100).optional(),
 
     subject: z
         .string()
@@ -71,6 +71,7 @@ const ticketQuerySchema = z.object({
     status: z.enum(ticketStatuses).optional(),
     category: z.enum(ticketCategories).optional(),
     priority: z.enum(ticketPriorities).optional(),
+    search: z.string().trim().max(200, "Search query cannot exceed 200 characters").optional(),
     limit: z.coerce.number().int().min(1).max(100).default(10),
     page: z.coerce.number().int().min(1).default(1),
 });
